@@ -1,8 +1,6 @@
 package org.example.assignment1.model;
 
-import org.springframework.stereotype.Component;
 
-@Component
 public class Administrator {
 
     private String adminId = "ADM-001";

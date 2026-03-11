@@ -1,15 +1,13 @@
 package org.example.assignment1.model;
 
-import org.springframework.stereotype.Component;
 
-@Component
 public class Users {
     private String name = "Default User";
     private String email = "user@example.com";
     private String role = "attendee"; // "attendee" or "admin"
 
 
-    public Users() {}
+    public Users(String mostafa, String mail) {}
 
 
     public String getName() { return name;

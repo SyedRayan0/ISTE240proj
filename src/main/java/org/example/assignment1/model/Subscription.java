@@ -1,17 +1,21 @@
 package org.example.assignment1.model;
 
-import org.springframework.stereotype.Component;
-
-@Component
 public class Subscription {
     private String subscriptionId = "SUB-100";
     private String subscriberEmail = "attendee@example.com";
     private String eventTitle = "Initial Event";
 
-    // Default Constructor [cite: 39]
+    // Default Constructor (Required by Spring Boot to process web forms)
     public Subscription() {}
 
-    // Getters and Setters [cite: 39]
+
+    public Subscription(String subscriptionId, String subscriberEmail, String eventTitle) {
+        this.subscriptionId = subscriptionId;
+        this.subscriberEmail = subscriberEmail;
+        this.eventTitle = eventTitle;
+    }
+
+    // Getters and Setters
     public String getSubscriptionId() {
         return subscriptionId;
     }

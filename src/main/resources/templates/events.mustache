@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>All Events</h2>
+<table border="1">
+    <tr>
+        <th>Title</th>
+        <th>Location</th>
+        <th>Date</th>
+    </tr>
+    {{#events}}
+        <tr>
+            <td>{{title}}</td>
+            <td>{{location}}</td>
+            <td>{{date}}</td>
+        </tr>
+    {{/events}}
+</table>
+<br>
+<a href="/">Return to Home</a>
+</body>
+</html>
