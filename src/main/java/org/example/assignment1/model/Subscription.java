@@ -1,11 +1,14 @@
 package org.example.assignment1.model;
 
 public class Subscription {
-    private String subscriptionId = "SUB-100";
-    private String subscriberEmail = "attendee@example.com";
-    private String eventTitle = "Initial Event";
+    private String subscriptionId;
+    private String subscriberEmail;
+    private String eventTitle;
 
-    // Default Constructor (Required by Spring Boot to process web forms)
+
+    private Administrator approvedBy;
+
+
     public Subscription() {}
 
 
@@ -15,37 +18,16 @@ public class Subscription {
         this.eventTitle = eventTitle;
     }
 
-    // Getters and Setters
-    public String getSubscriptionId() {
-        return subscriptionId;
-    }
 
-    public void setSubscriptionId(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
-    }
+    public String getSubscriptionId() { return subscriptionId; }
+    public void setSubscriptionId(String subscriptionId) { this.subscriptionId = subscriptionId; }
 
-    public String getSubscriberEmail() {
-        return subscriberEmail;
-    }
+    public String getSubscriberEmail() { return subscriberEmail; }
+    public void setSubscriberEmail(String subscriberEmail) { this.subscriberEmail = subscriberEmail; }
 
-    public void setSubscriberEmail(String subscriberEmail) {
-        this.subscriberEmail = subscriberEmail;
-    }
+    public String getEventTitle() { return eventTitle; }
+    public void setEventTitle(String eventTitle) { this.eventTitle = eventTitle; }
 
-    public String getEventTitle() {
-        return eventTitle;
-    }
-
-    public void setEventTitle(String eventTitle) {
-        this.eventTitle = eventTitle;
-    }
-
-    @Override
-    public String toString() {
-        return "Subscription{" +
-                "subscriptionId='" + subscriptionId + '\'' +
-                ", subscriberEmail='" + subscriberEmail + '\'' +
-                ", eventTitle='" + eventTitle + '\'' +
-                '}';
-    }
+    public Administrator getApprovedBy() { return approvedBy; }
+    public void setApprovedBy(Administrator approvedBy) { this.approvedBy = approvedBy; }
 }
