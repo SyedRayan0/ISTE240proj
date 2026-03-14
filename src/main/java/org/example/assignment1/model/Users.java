@@ -7,7 +7,7 @@ public class Users {
     private String role = "attendee"; // "attendee" or "admin"
 
 
-    public Users(String mostafa, String mail) {}
+    public Users(String name, String mail) {}
 
 
     public String getName() { return name;
