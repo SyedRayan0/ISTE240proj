@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>All Subscriptions</h2>
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Event</th>
+    </tr>
+    {{#subscriptions}}
+        <tr>
+            <td>{{subscriptionId}}</td>
+            <td>{{subscriberEmail}}</td>
+            <td>{{eventTitle}}</td>
+        </tr>
+    {{/subscriptions}}
+</table>
+<br>
+<a href="/">Return to Home</a>
+</body>
+</html>
