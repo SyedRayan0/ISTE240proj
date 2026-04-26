@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EventHub – Subscriptions</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    body { background:#f8f9fa; }
+    .page-header { background:linear-gradient(135deg,#1a1a2e,#198754); color:#fff; padding:40px 0 30px; }
+    .table th { background:#198754; color:#fff; }
+    .btn-action { padding:3px 10px; font-size:.8rem; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar navbar-dark" style="background:#1a1a2e;">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="index.html"><i class="bi bi-calendar-event me-2"></i>EventHub</a>
+      <div class="d-flex gap-2">
+        <a href="events.html" class="btn btn-outline-light btn-sm">Events</a>
+        <a href="users.html" class="btn btn-outline-light btn-sm">Users</a>
+        <a href="subscriptions.html" class="btn btn-success btn-sm">Subscriptions</a>
+        <a href="administrators.html" class="btn btn-outline-light btn-sm">Admins</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div class="container">
+      <h2><i class="bi bi-bell me-2"></i>Subscriptions</h2>
+      <p class="mb-0 opacity-75">Manage event subscriptions &mdash; Author: Ali Faisal (ID: 415002117)</p>
+    </div>
+  </div>
+
+  <div class="container py-4">
+
+    <div class="position-fixed top-0 end-0 p-3" style="z-index:9999">
+      <div id="toast" class="toast align-items-center text-white border-0" role="alert">
+        <div class="d-flex">
+          <div class="toast-body" id="toast-msg"></div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <div class="input-group" style="max-width:340px;">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" id="searchInput" class="form-control" placeholder="Search by event title..." oninput="searchSubs()"/>
+        <button class="btn btn-outline-secondary" onclick="loadSubs()">Clear</button>
+      </div>
+      <button class="btn btn-success fw-semibold" onclick="openModal()"><i class="bi bi-plus-lg me-1"></i>Add Subscription</button>
+    </div>
+
+    <div id="spinner" class="text-center py-5"><div class="spinner-border text-success"></div></div>
+
+    <div class="card shadow-sm d-none" id="tableCard">
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+          <thead>
+            <tr><th>ID</th><th>Subscription ID</th><th>Email</th><th>Event Title</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="subsTable"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="emptyMsg" class="text-center text-muted py-5 d-none">No subscriptions found.</div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="subModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="modalTitle">Add Subscription</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="subId"/>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Subscription ID *</label>
+            <input type="text" id="fSubId" class="form-control" placeholder="e.g. SUB-104"/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Subscriber Email *</label>
+            <input type="email" id="fEmail" class="form-control" placeholder="user@example.com"/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Event Title *</label>
+            <input type="text" id="fEventTitle" class="form-control" placeholder="e.g. Hackathon 2026"/>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-success fw-semibold" onclick="saveSub()">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const API = '/api/subscriptions';
+    let modal, toast;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      modal = new bootstrap.Modal(document.getElementById('subModal'));
+      toast = new bootstrap.Toast(document.getElementById('toast'));
+      loadSubs();
+    });
+
+    function showToast(msg, type = 'success') {
+      const el = document.getElementById('toast');
+      el.className = `toast align-items-center text-white border-0 bg-${type}`;
+      document.getElementById('toast-msg').textContent = msg;
+      toast.show();
+    }
+
+    async function loadSubs() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('spinner').classList.remove('d-none');
+      document.getElementById('tableCard').classList.add('d-none');
+      document.getElementById('emptyMsg').classList.add('d-none');
+      try {
+        const res = await fetch(API);
+        renderTable(await res.json());
+      } catch { showToast('Failed to load subscriptions.', 'danger'); }
+    }
+
+    async function searchSubs() {
+      const q = document.getElementById('searchInput').value.trim();
+      if (!q) { loadSubs(); return; }
+      try {
+        const res = await fetch(`${API}/search?eventTitle=${encodeURIComponent(q)}`);
+        renderTable(await res.json());
+      } catch { showToast('Search failed.', 'danger'); }
+    }
+
+    function renderTable(data) {
+      document.getElementById('spinner').classList.add('d-none');
+      if (!data.length) { document.getElementById('emptyMsg').classList.remove('d-none'); return; }
+      document.getElementById('tableCard').classList.remove('d-none');
+      document.getElementById('subsTable').innerHTML = data.map(s => `
+        <tr>
+          <td>${s.id}</td>
+          <td><span class="badge bg-success-subtle text-success-emphasis px-2">${s.subscriptionId}</span></td>
+          <td>${s.subscriberEmail}</td>
+          <td class="fw-semibold">${s.eventTitle}</td>
+          <td>
+            <button class="btn btn-outline-primary btn-action me-1" onclick="editSub(${s.id})"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-outline-danger btn-action" onclick="deleteSub(${s.id})"><i class="bi bi-trash"></i></button>
+          </td>
+        </tr>`).join('');
+    }
+
+    function openModal(s = null) {
+      document.getElementById('modalTitle').textContent = s ? 'Edit Subscription' : 'Add Subscription';
+      document.getElementById('subId').value = s?.id || '';
+      document.getElementById('fSubId').value = s?.subscriptionId || '';
+      document.getElementById('fEmail').value = s?.subscriberEmail || '';
+      document.getElementById('fEventTitle').value = s?.eventTitle || '';
+      modal.show();
+    }
+
+    async function editSub(id) {
+      const res = await fetch(`${API}/${id}`);
+      openModal(await res.json());
+    }
+
+    async function saveSub() {
+      const id = document.getElementById('subId').value;
+      const body = {
+        subscriptionId: document.getElementById('fSubId').value,
+        subscriberEmail: document.getElementById('fEmail').value,
+        eventTitle: document.getElementById('fEventTitle').value
+      };
+      if (!body.subscriptionId || !body.subscriberEmail || !body.eventTitle) {
+        alert('All fields are required.'); return;
+      }
+      try {
+        const res = await fetch(id ? `${API}/${id}` : API, {
+          method: id ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error();
+        modal.hide();
+        showToast(id ? 'Subscription updated!' : 'Subscription created!');
+        loadSubs();
+      } catch { showToast('Save failed.', 'danger'); }
+    }
+
+    async function deleteSub(id) {
+      if (!confirm('Delete this subscription?')) return;
+      try {
+        const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+        showToast('Subscription deleted!', 'warning');
+        loadSubs();
+      } catch { showToast('Delete failed.', 'danger'); }
+    }
+  </script>
+</body>
+</html>
